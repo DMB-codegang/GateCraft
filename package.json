@@ -10,18 +10,33 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "deploy": "npm run build && wrangler deploy",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@hono/trpc-server": "^0.4.2",
+    "@trpc/client": "^11.17.0",
+    "@trpc/server": "^11.17.0",
+    "bcrypt-ts": "^8.0.1",
+    "drizzle-orm": "^0.45.2",
+    "element-plus": "^2.13.7",
+    "hono": "^4.12.16",
+    "typeit": "^8.8.7",
     "vue": "^3.5.32",
-    "vue-router": "^5.0.4"
+    "vue-router": "^5.0.4",
+    "zod": "^4.4.1"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.35.0",
     "@tsconfig/node24": "^24.0.4",
-    "@types/node": "^24.12.2",
+    "@types/node": "^24.12.4",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/tsconfig": "^0.9.1",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
     "npm-run-all2": "^8.0.4",
     "typescript": "~6.0.0",
     "vite": "^8.0.8",
