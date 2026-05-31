@@ -24,6 +24,7 @@
     "drizzle-orm": "^0.45.2",
     "element-plus": "^2.13.7",
     "hono": "^4.12.16",
+    "pinia": "^3.0.4",
     "typeit": "^8.8.7",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4",

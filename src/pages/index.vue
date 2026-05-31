@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import TypeIt from 'typeit';
-import { ElCard, ElMessage } from 'element-plus';
+import { buttonEmits, ElCard, ElMessage } from 'element-plus';
 
 const typeitElement = ref(null);
 const modpackUrl = `${window.location.origin}/files/mcmtrdy.zip`;
@@ -38,7 +38,6 @@ const copyToClipboard = async (text: string) => {
   </el-card>
   <el-card class="custom-card">
     <h2>使用教程</h2>
-3
   </el-card>
 </template>
 

@@ -1,32 +1,29 @@
 <script setup lang="ts">
 import { useRouter, RouterView } from 'vue-router'
-import { useAuth } from '@/stores/auth'
+import { useAuthStore } from '@/store/index.ts'
 
+const authStore = useAuthStore()
 const router = useRouter()
-const { state, isLoggedIn, clearAuth } = useAuth()
 
 const handleLogout = () => {
-  clearAuth()
+  authStore.logout()
   router.push('/')
 }
 </script>
 
 <template>
   <el-container>
-    <el-header style="display: flex; align-items: center;">
+    <el-header style="display: flex; align-items: center; justify-content: space-between;">
       <el-menu mode="horizontal" router style="flex-grow: 1; border-bottom: none;">
         <el-menu-item index="/">主页</el-menu-item>
         <el-menu-item index="/about">关于</el-menu-item>
       </el-menu>
-      <template v-if="isLoggedIn">
-        <span style="margin-right: 12px; font-size: 14px; color: #606266;">
-          {{ state.user?.nickname || state.user?.name }}
-        </span>
-        <el-button @click="handleLogout" size="small">退出登录</el-button>
-      </template>
-      <el-button v-else @click="router.push('/login')" type="primary" size="small">
-        登录
-      </el-button>
+      <div v-if="authStore.user" style="display: flex; align-items: center; gap: 12px;">
+        <el-avatar v-if="authStore.user?.avatar" :src="authStore.user.avatar" :size="32" />
+        <span>{{ authStore.user?.nickname }}</span>
+        <el-button type="danger" size="small" @click="handleLogout">退出</el-button>
+      </div>
+      <el-button v-else type="primary" size="small" @click="router.push('/login')">登录</el-button>
     </el-header>
     <el-main>
       <RouterView />
