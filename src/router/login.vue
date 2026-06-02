@@ -2,8 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { useAuthStore } from '../store'
-import {authRouter} from "../../server/trpc/router/auth.ts";
+import { useAuthStore } from '@/store'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -23,7 +22,7 @@ const handleLogin = async () => {
   try {
     await authStore.login({username: loginForm.value.name, password: loginForm.value.password})
     ElMessage.success('登录成功')
-    router.push('/')
+    await router.push('/')
   } catch (e: any) {
     ElMessage.error(e.message || '登录失败')
   } finally {
