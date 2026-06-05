@@ -19,9 +19,3 @@ export interface RegisterCredentials {
     password: string
     email: string
 }
-
-export interface AuthResponse {
-    user: User
-    token: string
-    refreshToken: string
-}

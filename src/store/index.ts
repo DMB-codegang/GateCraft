@@ -101,6 +101,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function dispatch(newToken: string) {
+    token.value = newToken
+    localStorage.setItem('token', newToken)
+    await fetchProfile()
+  }
+
   /**
    * 从 localStorage 恢复登录态
    * 应用启动时调用，尝试用持久化的 token 恢复用户会话
@@ -119,6 +125,6 @@ export const useAuthStore = defineStore('auth', () => {
     // getters
     isLoggedIn, currentUser, userRole, hasPermission,
     // actions
-    login, logout, register
+    login, logout, register, initFromStorage, dispatch
   }
 })

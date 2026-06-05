@@ -1,17 +1,17 @@
-import {initTRPC, TRPCError} from '@trpc/server'
+import {TRPCError} from '@trpc/server'
 import {z} from 'zod'
-import {and, eq} from 'drizzle-orm'
+import {or, eq} from 'drizzle-orm'
 import {compare, hash} from 'bcrypt-ts'
 import {sign} from 'hono/jwt'
 
-import type {Context} from '../type'
-import {users} from '../../db/schema'
-import {authConfig} from '../../utils/config'
-import { publicProcedure, protectedProcedure } from '../trpc'
+import { users } from '../../../db/schema'
+import { authConfig } from '../../../utils/config'
+import { router, publicProcedure, protectedProcedure } from '../../trpc'
+import { getSecret } from "../../../utils/secret";
+import { qq } from './qq'
 
-const t = initTRPC.context<Context>().create()
-
-export const authRouter = t.router({
+export const authRouter = router({
+    qq,
     /** 用户登录 */
     login: publicProcedure
         .input(z.object({
@@ -24,7 +24,7 @@ export const authRouter = t.router({
             const [user] = await ctx.db
                 .select()
                 .from(users)
-                .where(and(eq(users.name, input.username), eq(users.email, input.username)))
+                .where(or(eq(users.name, input.username), eq(users.email, input.username)))
 
             if (!user) {
                 console.log(`用户不存在: ${input.username}`)
@@ -51,7 +51,7 @@ export const authRouter = t.router({
                 exp: Math.floor(Date.now() / 1000 + authConfig.tokenExpirySeconds),
                 iat: Math.floor(Date.now() / 1000),
             }
-            const jwt = await sign(payload, await getSecret(ctx))
+            const jwt = await sign(payload, await getSecret(ctx.kv))
 
 
             // 4. 返回 token 及用户信息
@@ -62,7 +62,7 @@ export const authRouter = t.router({
                     username: user.name,
                     nickname: user.nickname,
                     email: user.email,
-                    role: user.role,
+                    role: user!.role,
                     avatar: user.avatar,
                 },
             }
@@ -76,6 +76,9 @@ export const authRouter = t.router({
             email: z.email().optional(),
         }))
         .mutation(async ({ctx, input}) => {
+            // 0.判断是否开放注册
+            if(!authConfig.register) throw new TRPCError({code: 'FORBIDDEN', message: '管理员没有开放注册功能'})
+
             // 1.查询是否有重复的用户
             const [existing] = await ctx.db
                 .select()
@@ -86,6 +89,7 @@ export const authRouter = t.router({
                 throw new TRPCError({code: 'CONFLICT', message: '用户名已存在'})
             }
 
+            // 2.加盐存储
             const hashedPassword = await hash(input.password, 10)
             const [user] = await ctx.db
                 .insert(users)
@@ -97,13 +101,14 @@ export const authRouter = t.router({
                 })
                 .returning()
 
+            // 3.生成 jwt
             const payload = {
                 user: user!.name,
                 role: user!.role,
                 exp: Math.floor(Date.now() / 1000 + authConfig.tokenExpirySeconds),
                 iat: Math.floor(Date.now() / 1000),
             }
-            const jwt = await sign(payload, await getSecret(ctx))
+            const jwt = await sign(payload, await getSecret(ctx.kv))
 
             return {
                 token: jwt,
@@ -111,7 +116,7 @@ export const authRouter = t.router({
                     id: user!.id,
                     username: user!.name,
                     nickname: user!.nickname,
-                    role: user.role,
+                    role: user!.role,
                     email: user!.email,
                     avatar: user!.avatar,
                 },
@@ -138,15 +143,8 @@ export const authRouter = t.router({
                 }
             }
         })
+
+        
 })
 
-async function getSecret(ctx: Context) {
-    let secret = await ctx.kv.get('secret')
-    if (!secret) {
-        const bytes = new Uint8Array(32)
-        crypto.getRandomValues(bytes)
-        secret = btoa(String.fromCharCode(...bytes))
-        await ctx.kv.put('secret', secret)
-    }
-    return secret
-}
+

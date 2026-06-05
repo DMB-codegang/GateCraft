@@ -2,7 +2,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { TencentQq } from '@icon-park/vue-next'
 import { useAuthStore } from '@/store'
+import {trpc} from "@/trpc.ts";
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -63,10 +65,10 @@ const handleRegister = async () => {
 
 const handleQQLogin = async () => {
   try {
-    const res = await fetch('/api/auth/qq/url')
-    const data = await res.json() as { url?: string; error?: string }
-    if (data.url) {
-      window.location.href = data.url
+    const res = await trpc.auth.qq.getState.mutate()
+    if (res) {
+      const params = new URLSearchParams(res as Record<string, string>)
+      window.location.href = `https://graph.qq.com/oauth2.0/authorize?${params.toString()}`
     }
   } catch {
     ElMessage.error('获取QQ登录链接失败')
@@ -90,7 +92,7 @@ onMounted(async () => {
   if (token) {
     loading.value = true
     try {
-      // await store.dispatch('handleQQToken', token)
+      await authStore.dispatch(token)
       ElMessage.success('QQ登录成功')
       await router.push('/')
     } catch {
@@ -158,7 +160,7 @@ onMounted(async () => {
 
       <div class="third-party-login">
         <el-button size="large" @click="handleQQLogin" :loading="loading">
-          <span style="font-size: 18px; margin-right: 6px;">企鹅</span>
+        <tencent-qq theme="outline" size="24" fill="#333"/>
           QQ登录
         </el-button>
       </div>

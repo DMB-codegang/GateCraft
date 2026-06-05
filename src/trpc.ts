@@ -1,9 +1,9 @@
-import { createTRPCProxyClient, httpBatchLink } from '@trpc/client'
+import { createTRPCProxyClient, httpLink } from '@trpc/client'
 import type { AppRouter } from '../server/trpc/router'
 
 export const trpc = createTRPCProxyClient<AppRouter>({
   links: [
-    httpBatchLink({
+    httpLink({
       url: '/trpc',
       headers() {
         const token = localStorage.getItem('token')

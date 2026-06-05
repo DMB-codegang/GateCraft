@@ -15,7 +15,9 @@ export default defineConfig({
 		}),
 		vue(),
 		vueDevTools(),
-		cloudflare()
+		cloudflare({
+			inspectorPort: 9229,
+		})
 	],
 	resolve: {
 		alias: {
