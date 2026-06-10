@@ -18,11 +18,13 @@
   },
   "dependencies": {
     "@hono/trpc-server": "^0.4.2",
+    "@hono/zod-validator": "^0.8.0",
     "@icon-park/vue-next": "^1.4.2",
     "@trpc/client": "^11.17.0",
     "@trpc/server": "^11.17.0",
     "bcrypt-ts": "^8.0.1",
     "drizzle-orm": "^0.45.2",
+    "drizzle-zod": "^0.8.3",
     "element-plus": "^2.13.7",
     "hono": "^4.12.16",
     "pinia": "^3.0.4",

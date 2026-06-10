@@ -1,6 +1,7 @@
 import type { Context } from 'hono'
 
-import {createUserById, findUserById, generateJwt, redirectWithToken, validateState} from './utils'
+import {generateJwt} from '../../utils/token'
+import {createUserById, findUserById, redirectWithToken, validateState} from './utils'
 import type { Env } from '../../type'
 
 /** QQ OAuth token 接口返回的数据结构 */
@@ -124,6 +125,7 @@ export async function handleCallback(c: Context<{ Bindings: Env }>) {
   // 第三步：查询用户是否存在
   let user = await findUserById(env.db, 'qq', userUnionId)
   console.debug(`从数据库比较得到用户：${user}`)
+  let isRegistered = false
   if (!user) {
     // 如果用户不存在，获取qq用户的信息存入数据库
     const userInfoUrl = new URL('https://graph.qq.com/user/get_user_info')
@@ -135,15 +137,17 @@ export async function handleCallback(c: Context<{ Bindings: Env }>) {
     const userInfo = (await userInfoRes.json()) as QQUserInfo
     console.debug('用户信息：', userInfo)
 
-    await createUserById(env.db, 'qq', {
-      id: userUnionId,
+    user = await createUserById(env.db, 'qq', {
+      openid: userUnionId,
       nickname: userInfo.nickname,
       avatar: userInfo.figureurl_qq_2
     })
+    isRegistered = true
   }
+  if (user.name === user.qqUnionId)isRegistered = true
 
   // 第四步：签发 JWT 并重定向
-  const token = await generateJwt({name: user ? user.name : userUnionId, role: 'user'}, env)
+  const token = await generateJwt(user, env.kv)
 
-  return redirectWithToken(host, token)
+  return redirectWithToken(host, token, isRegistered)
 }

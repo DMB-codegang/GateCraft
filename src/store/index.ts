@@ -46,6 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     error.value = null
     try {
+      console.log(credentials)
       const res = await trpc.auth.login.mutate(credentials)
       user.value = res.user
       token.value = res.token
@@ -77,7 +78,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!token.value) return
     loading.value = true
     try {
-      user.value = (await trpc.auth.getProfile.mutate()).user
+      user.value = (await trpc.user.getProfile.query()).user
     } catch {
       await logout()
     } finally {
@@ -101,10 +102,33 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function dispatch(newToken: string) {
+  /**
+   * 更新访问令牌
+   * 将新令牌写入本地状态并持久化到 localStorage，随后刷新用户资料
+   * @param newToken - 新的 JWT 访问令牌
+   * @param onlyUpdate - 如果只有update权限，仅写入，不获取信息
+   */
+  async function dispatch(newToken: string, onlyUpdate: boolean = false) {
+    console.log(`更新token。模式： ${onlyUpdate?'直接':'刷新'} token：${newToken}`)
     token.value = newToken
     localStorage.setItem('token', newToken)
-    await fetchProfile()
+    if (!onlyUpdate) await fetchProfile()
+  }
+
+  /**
+   * @param input -
+   */
+  async function updateProfile(input: {name?: string, nickname?: string, password?: string}) {
+    error.value = null
+    try {
+      const res = await trpc.user.updateProfile.mutate(input)
+      user.value = res.user
+      token.value = res.token
+      localStorage.setItem('token', res.token)
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : '提交失败'
+      throw err
+    }
   }
 
   /**
@@ -125,6 +149,6 @@ export const useAuthStore = defineStore('auth', () => {
     // getters
     isLoggedIn, currentUser, userRole, hasPermission,
     // actions
-    login, logout, register, initFromStorage, dispatch
+    login, updateProfile, logout, register, initFromStorage, dispatch
   }
 })

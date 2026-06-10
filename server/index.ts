@@ -3,11 +3,15 @@ import {trpcServer} from '@hono/trpc-server'
 import {verify} from 'hono/jwt'
 
 import {appRouter} from './trpc/router'
+import {yggdrasil} from './yggdrasil'
 import {createDb} from './db'
 import {api} from './api'
 import type {Env} from './type'
+import {getSecret} from "./utils/secret";
+import {TRPCError} from "@trpc/server";
 
 const app = new Hono<{ Bindings: Env }>()
+
 /**
  * 使用trpc实现web交互
  */
@@ -16,15 +20,19 @@ app.use(
     async (c, next) => {
         const db = createDb(c.env.db)
 
-        let user: { name: string; role: string } | null = null
+        let user: { id: number, name: string; role: string; onlyUpdate: boolean } | null = null
         const authHeader = c.req.header('Authorization')
         if (authHeader?.startsWith('Bearer ')) {
             const token = authHeader.slice(7)
             try {
-                const secret = await c.env.kv.get('secret')
-                if (secret) {
-                    const payload = await verify(token, secret, 'HS256')
-                    user = {name: payload.user as string, role: payload.role as string}
+                const secret = await getSecret(c.env.kv)
+                const payload = await verify(token, secret, 'HS256')
+                if (payload.type != 'web') return new TRPCError({code: 'FORBIDDEN', message: '你使用了不合规的token'})
+                user = {
+                    id: payload.id as number,
+                    name: payload.user as string,
+                    role: payload.role as string,
+                    onlyUpdate: !!payload.onlyUpdate,
                 }
             } catch {
                 // token 无效或过期，user 保持 null
@@ -72,6 +80,7 @@ app.get('/files/:path{.*}', async (c) => {
 })
 
 app.route('/api', api)
+app.route('/yggdrasil', yggdrasil)
 
 
 export default app

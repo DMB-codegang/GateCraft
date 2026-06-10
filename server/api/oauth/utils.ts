@@ -1,10 +1,7 @@
-import {sign} from 'hono/jwt'
+
 import {eq} from 'drizzle-orm'
 
 import {createDb, schema} from '../../db'
-import {authConfig} from '../../utils/config'
-import type {Env} from '../../type'
-import {getSecret} from "../../utils/secret";
 
 const {users} = schema
 
@@ -15,7 +12,7 @@ const {users} = schema
  * 每个 state 只能使用一次，校验后即删除。
  *
  * @param kv - Cloudflare KV 命名空间实例
- * @param provider - 第三方平台标识，如 'qq'、'github'、'wechat'
+ * @param provider - 第三方平台标识，如 'qq'
  * @param state - 回调时传递的 state 参数
  * @returns 存储的主机名（host），校验失败返回 null
  */
@@ -58,45 +55,28 @@ export async function findUserById(db: D1Database, provider: 'qq', id: string) {
  * @param userInfo - 用户信息，包含 nickname 和 avatar 字段
  */
 export async function createUserById(db: D1Database, provider: 'qq', userInfo: {
-    id: string,
+    openid: string,
     nickname: string,
     avatar: string
-}) {
+}){
     const drizzle = createDb(db)
     switch (provider) {
         case 'qq':
-            await drizzle
-                .insert(users)
-                .values({
-                    name: userInfo.id,
-                    nickname: userInfo.nickname,
-                    qqUnionId: userInfo.id,
-                    avatar: userInfo.avatar,
-                })
-                .returning()
-            break
-    }
-}
+                const [user] = await drizzle
+                    .insert(users)
+                    .values({
+                        name: userInfo.openid,
+                        nickname: userInfo.nickname,
+                        qqUnionId: userInfo.openid,
+                        uuid: crypto.randomUUID().replace(/-/g, ''),
+                        avatar: userInfo.avatar,
+                    })
+                    .returning()
+                    if (!user) throw new Error('Failed to create user')
+                return user
 
-/**
- * 生成 JWT 令牌
- *
- * 从环境变量中获取或自动生成签名密钥，然后签发包含用户名和角色的 HS256 签名 JWT。
- * 令牌过期时间由 {@link authConfig.tokenExpirySeconds} 配置决定。
- *
- * @param user - 用户信息，包含 name 和 role 字段
- * @param env - 运行环境，包含 KV 存储等绑定
- * @returns 签发的 JWT 字符串
- */
-export async function generateJwt(user: { name: string; role: string }, env: Env) {
-    const secret = await getSecret(env.kv)
-    const payload = {
-        user: user.name,
-        role: user.role,
-        exp: Math.floor(Date.now() / 1000 + authConfig.tokenExpirySeconds),
-        iat: Math.floor(Date.now() / 1000),
+        default: throw new Error('Unknown provider')
     }
-    return sign(payload, secret, 'HS256')
 }
 
 /**
@@ -106,13 +86,14 @@ export async function generateJwt(user: { name: string; role: string }, env: Env
  *
  * @param host - 前端域名
  * @param token - JWT 令牌字符串
+ * @param register - 用户是否首次登录
  * @returns 302 重定向的 Response 对象
  */
-export function redirectWithToken(host: string, token: string) {
+export function redirectWithToken(host: string, token: string, register: boolean) {
     return new Response(null, {
         status: 302,
         headers: {
-            Location: `https://${host}/login?token=${token}`,
+            Location: `https://${host}/callback?token=${token}${register?'&isRegistered=true':''}`,
         },
     })
 }

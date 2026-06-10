@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { TencentQq } from '@icon-park/vue-next'
 import { useAuthStore } from '@/store'
@@ -8,7 +8,6 @@ import {trpc} from "@/trpc.ts";
 
 const authStore = useAuthStore()
 const router = useRouter()
-const route = useRoute()
 
 const activeTab = ref('login')
 const loginForm = ref({ name: '', password: '' })
@@ -65,7 +64,7 @@ const handleRegister = async () => {
 
 const handleQQLogin = async () => {
   try {
-    const res = await trpc.auth.qq.getState.mutate()
+    const res = await trpc.auth.qq.getState.query()
     if (res) {
       const params = new URLSearchParams(res as Record<string, string>)
       window.location.href = `https://graph.qq.com/oauth2.0/authorize?${params.toString()}`
@@ -74,34 +73,6 @@ const handleQQLogin = async () => {
     ElMessage.error('获取QQ登录链接失败')
   }
 }
-
-onMounted(async () => {
-  const token = route.query.token as string
-  const error = route.query.error as string
-
-  if (error) {
-    const errorMessages: Record<string, string> = {
-      no_code: 'QQ授权失败：未获取到授权码',
-      token_failed: 'QQ授权失败：获取access_token失败',
-      openid_failed: 'QQ授权失败：获取openid失败',
-    }
-    ElMessage.error(errorMessages[error] || 'QQ登录失败')
-    return
-  }
-
-  if (token) {
-    loading.value = true
-    try {
-      await authStore.dispatch(token)
-      ElMessage.success('QQ登录成功')
-      await router.push('/')
-    } catch {
-      ElMessage.error('QQ登录失败，请重试')
-    } finally {
-      loading.value = false
-    }
-  }
-})
 
 
 </script>

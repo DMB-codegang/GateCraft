@@ -1,7 +1,7 @@
-import { router, publicProcedure, protectedProcedure } from '../../trpc'
+import { router, publicProcedure} from '../../trpc'
 
 export const qq = router({
-    getState: publicProcedure.mutation(async ({ctx}) => {
+    getState: publicProcedure.query(async ({ctx}) => {
         const bytes = new Uint8Array(32)
         crypto.getRandomValues(bytes)
         const state = btoa(String.fromCharCode(...bytes))

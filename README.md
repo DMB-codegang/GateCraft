@@ -1,42 +1,18 @@
-# mc
+# GateCraft
+GateCraft是一个集成网页、Yggdrasil服务器、支持三方登录的全栈Cloudflare项目。
+让腐竹可以以近乎0的经济成本用上支持QQ登录的账号管理服务。
 
-This template should help get you started developing with Vue 3 in Vite.
+## 为什么要做这个
+对于离线服务器来说，单账号因违规造成的封号成本很低，用户完全可以使用其他用户名/使用临时邮箱注册新账号。因此，提高服务器多账号成本是很有必要的。
+而使用三方账号绑定，则可以很好的规避这个问题。
+三方账号有其平台限制同个人注册账号的上限，注册成本同比之下相对较高。
 
-## Recommended IDE Setup
-
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
+## 功能支持情况
+- ✅支持QQ登录
+- ✅支持Yggdrasil服务器
+- ✅支持正版混合登录
+- ☐ 支持正版与此账号绑定
+- ☐ 个人资料管理
+- ☐ 管理员管理面板
+- ☐ 皮肤上传
+- ☐ 披风上传

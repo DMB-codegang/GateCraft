@@ -2,14 +2,15 @@
 import { ref, onMounted } from 'vue';
 import TypeIt from 'typeit';
 import { ElCard, ElMessage } from 'element-plus';
+import {config} from "../../config.ts";
 
 const typeitElement = ref(null);
 const modpackUrl = `${window.location.origin}/files/mcmtrdy.zip`;
-const mcServerUrl = 'mcmtrdy.codegang.top';
+const mcServerUrl = config.mcServerIp ? config.mcServerIp : window.location.hostname;
 
 onMounted(() => {
   new TypeIt(typeitElement.value!, {
-    strings: ['欢迎你', '这里是珲日青MC服务器'],
+    strings: ['欢迎你', `这里是${config.serverName}`],
     speed: 100,
     loop: true,
     breakLines: false,

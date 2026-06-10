@@ -4,8 +4,10 @@ export type Context = {
     kv: KVNamespace
     env: Env
     user: {
-        name: string,
+        id: number
+        name: string
         role: string
+        onlyUpdate: boolean
     } | null
     host: string
 }
