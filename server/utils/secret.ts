@@ -4,7 +4,7 @@ export async function getSecret(kv: KVNamespace) {
     if (!secret) {
         const bytes = new Uint8Array(32)
         crypto.getRandomValues(bytes)
-        secret = btoa(String.fromCharCode(...bytes))
+        secret = btoa(Array.from(bytes, b => String.fromCharCode(b)).join(''))
         await kv.put('secret', secret)
     }
     return secret

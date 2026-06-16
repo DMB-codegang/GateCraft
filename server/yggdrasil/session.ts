@@ -11,36 +11,22 @@ import {getSecret} from "../utils/secret";
 import {verify} from "hono/jwt";
 import {yggdrasilConfig} from '../../config';
 
-const MOJANG_SESSION = 'https://sessionserver.mojang.com'
-
-async function proxyToMojang(url: string, init?: RequestInit) {
-    const res = await fetch(url, {
-        ...init,
-        headers: { 'Content-Type': 'application/json', ...init?.headers }
-    })
-    return res
-}
-
 export const sessionServer = new Hono<{ Bindings: Env }>()
 
 const getProfileSchema = z.object({
-    unsigned: z.boolean()
+    unsigned: z.boolean().optional()
 })
 sessionServer.get("/session/minecraft/profile/:uuid", zValidator('query', getProfileSchema), async (c) => {
     const uuid = c.req.param('uuid')
-    const { unsigned } = c.req.valid('query');
+    let { unsigned } = c.req.valid('query');
+    if (unsigned === undefined) unsigned = true
 
     const result = await getUserByUuid(uuid, c.env.db, c.env.kv, !unsigned)
     if (!('error' in result)) {
         return c.json(result)
     }
 
-    if (yggdrasilConfig.mixedAuth) {
-        const params = unsigned ? '?unsigned=true' : ''
-        return proxyToMojang(`${MOJANG_SESSION}/session/minecraft/profile/${uuid}${params}`)
-    }
-
-    return c.json(result)
+    return c.json({error: result.error})
 })
 
 const joinSchema = z.object({
@@ -60,13 +46,8 @@ sessionServer.post("/session/minecraft/join", zValidator('json', joinSchema) ,as
         await c.env.kv.put(`ygg:serverid:${input.serverId}`, payload.uuid as string, {expirationTtl: yggdrasilConfig.joinServerExpirySeconds})
         return c.body(null, 204)
     } catch (error) {
-        if (yggdrasilConfig.mixedAuth) {
-            return proxyToMojang(`${MOJANG_SESSION}/session/minecraft/join`, {
-                method: 'POST',
-                body: JSON.stringify(c.req.valid('json'))
-            })
-        }
-        return c.json({error: 'FORBIDDEN', errorMessage: error}, 403)
+        console.error('join verification failed:', error)
+        return c.json({error: 'FORBIDDEN', errorMessage: '令牌验证失败'}, 403)
     }
 })
 
@@ -77,19 +58,14 @@ const hasJoinSchema = z.object({
 })
 sessionServer.get("/session/minecraft/hasJoined", zValidator('query', hasJoinSchema), async (c) => {
     const input = c.req.valid('query')
+    console.debug(`serverId:${input.serverId}`)
 
     const uuid = await c.env.kv.get(`ygg:serverid:${input.serverId}`)
     if (uuid) {
         return c.json(await getUserByUuid(uuid, c.env.db, c.env.kv))
     }
 
-    if (yggdrasilConfig.mixedAuth) {
-        const params = new URLSearchParams({ username: input.username, serverId: input.serverId })
-        if (input.ip) params.set('ip', input.ip)
-        return proxyToMojang(`${MOJANG_SESSION}/session/minecraft/hasJoined?${params}`)
-    }
-
-    return c.json({error: "No such user"})
+    return c.json({error: 'not found'}, 403)
 })
 
 

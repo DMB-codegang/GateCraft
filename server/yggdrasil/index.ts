@@ -15,7 +15,6 @@ yggdrasil.use('*', async (c,next) => {
 })
 
 yggdrasil.get('/', async (c) => {
-    console.log('Yggdrasil server running')
     const host = new URL(c.req.url).host
     return c.json({
         meta: {

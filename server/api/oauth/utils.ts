@@ -44,6 +44,8 @@ export async function findUserById(db: D1Database, provider: 'qq', id: string) {
                 .from(users)
                 .where(eq(users.qqUnionId, id))
             return existing
+        default:
+            throw new Error(`Unsupported provider: ${provider}`)
     }
 }
 

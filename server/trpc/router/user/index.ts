@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { createUpdateSchema } from 'drizzle-zod'
 
-import { router, onlyUpdateProcedure, protectedProcedure } from '../../trpc'
+import { router, loggedInProcedure, protectedProcedure } from '../../trpc'
 import { users } from "../../../db/schema";
 import {hash} from "bcrypt-ts";
 import {generateJwt} from "../../../utils/token";
@@ -30,7 +30,7 @@ export const userRouter = router({
         }
         ),
 
-    updateProfile: onlyUpdateProcedure
+    updateProfile: loggedInProcedure
         .input(createUpdateSchema(users).pick({
             name: true,
             nickname: true,

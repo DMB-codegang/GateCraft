@@ -4,7 +4,7 @@ import type { Context } from '../type'
 const t = initTRPC.context<Context>().create()
 
 // 中间件定义
-const onlyUpdate = t.middleware(({ ctx, next }) => {
+const isLoggedIn = t.middleware(({ ctx, next }) => {
     if (!ctx.user) throw new TRPCError({ code: 'UNAUTHORIZED', message: '未登录' })
     return next({
         ctx: {
@@ -35,7 +35,7 @@ const isAdmin = t.middleware(({ ctx, next }) => {
 
 // 导出 procedures 和 router
 export const router = t.router
-export const onlyUpdateProcedure = t.procedure.use(onlyUpdate)
+export const loggedInProcedure = t.procedure.use(isLoggedIn)
 export const publicProcedure = t.procedure
 export const protectedProcedure = t.procedure.use(isAuthed)
 export const adminProcedure = t.procedure.use(isAdmin)

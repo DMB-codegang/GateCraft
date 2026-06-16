@@ -10,7 +10,7 @@ import type {Env} from './type'
 import {getSecret} from "./utils/secret";
 import {TRPCError} from "@trpc/server";
 
-const app = new Hono<{ Bindings: Env }>()
+const app = new Hono<{ Bindings: Env }>({strict: false})
 
 /**
  * 使用trpc实现web交互
