@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 import { TencentQq } from '@icon-park/vue-next'
 import { useAuthStore } from '@/store'
 import {trpc} from "@/trpc.ts";
+import {authConfig} from "../../config.ts";
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -101,7 +102,7 @@ const handleQQLogin = async () => {
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane label="注册" name="register">
+        <el-tab-pane v-if="authConfig.register" label="注册" name="register">
           <el-form :model="registerForm" @keyup.enter="handleRegister">
             <el-form-item label="用户名">
               <el-input v-model="registerForm.name" placeholder="请输入用户名" />
@@ -129,7 +130,7 @@ const handleQQLogin = async () => {
 
       <el-divider>第三方登录</el-divider>
 
-      <div class="third-party-login">
+      <div v-if="authConfig.qqLogin" class="third-party-login">
         <el-button size="large" @click="handleQQLogin" :loading="loading">
         <tencent-qq theme="outline" size="24" fill="#333"/>
           QQ登录

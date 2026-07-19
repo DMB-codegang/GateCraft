@@ -3,7 +3,8 @@
 export const authConfig = {
     tokenExpirySeconds: 21600, // web token过期时间
     register: false, // 是否开启注册
-    qqLogin: false, // 是否开启QQ登录
+    qqLogin: true, // 是否开启QQ登录
+    qqRegister: false, // 是否开启QQ注册，开启此项必须先开启 qqLogin
 }
 
 // 通用配置

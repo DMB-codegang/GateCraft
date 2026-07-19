@@ -23,6 +23,7 @@ onMounted(() => {
     <el-header style="display: flex; align-items: center; justify-content: space-between;">
       <el-menu mode="horizontal" router style="flex-grow: 1; border-bottom: none;">
         <el-menu-item index="/">主页</el-menu-item>
+        <el-menu-item index="/me">我的</el-menu-item>
         <el-menu-item index="/about">关于</el-menu-item>
       </el-menu>
       <div v-if="authStore.user" style="display: flex; align-items: center; gap: 12px;">
