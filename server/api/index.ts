@@ -1,6 +1,8 @@
 import { Hono } from 'hono'
 
 import { oauthRoutes } from './oauth'
+import { mc } from './mc'
+
 import type { Env } from '../type'
 
 /**
@@ -13,3 +15,4 @@ import type { Env } from '../type'
 export const api = new Hono<{ Bindings: Env }>()
 
 api.route('/oauth', oauthRoutes)
+api.route('/mc', mc)

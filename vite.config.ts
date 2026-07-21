@@ -9,9 +9,9 @@ import VueRouter from 'vue-router/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-	server: {
-		port: 80,
-	},
+	// server: {
+	// 	port: 80,
+	// },
 	plugins: [
 		VueRouter({
 			routesFolder: 'src/pages',
