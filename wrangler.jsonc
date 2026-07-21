@@ -23,7 +23,7 @@
 			"binding": "db",
 			"database_name": "mc",
 			"database_id": "75b48df2-4769-407e-ba9d-19d84e97827a",
-			"remote": true
+			"remote": false
 		}
 	],
 	"kv_namespaces": [
